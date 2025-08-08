@@ -18,6 +18,8 @@ dependencies:
 
   # For using Hive with custom model classes (adapters)
   path_provider: ^2.1.1
+  flutter_bloc: ^9.1.1
+  modal_progress_hud_nsn: ^0.5.1
 
 dev_dependencies:
   flutter_test:
@@ -27,6 +29,7 @@ dev_dependencies:
   # For generating Hive TypeAdapters
   hive_generator: ^2.0.1
   build_runner: ^2.4.6
+  bloc_test: ^10.0.0
 
 flutter:
   uses-material-design: true

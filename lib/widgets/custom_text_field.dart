@@ -5,20 +5,29 @@ class CustomTextField extends StatelessWidget {
   final String hint;
   final int maxLines;
   final TextEditingController? controller;
+  final void Function(String?)? onSaved;
 
   const CustomTextField({
     super.key,
     required this.hint,
     this.maxLines = 1,
     this.controller,
+    this.onSaved,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller, // ✨ عشان نقدر نتحكم في النص
+    return TextFormField(
+      controller: controller, // للتحكم بالنص
       cursorColor: kPrimaryColor,
       maxLines: maxLines,
+      onSaved: onSaved, // تخزين القيمة عند الحفظ
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return '$hint is required';
+        }
+        return null;
+      },
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: const TextStyle(color: kPrimaryColor),
