@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:notes_app/views/add_note_view.dart';
 import 'package:notes_app/views/notes_view_body.dart';
+import 'package:notes_app/widgets/custom_floating_button.dart'; // استدعاء الزر من الملف الجديد
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -8,19 +8,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true, // لتوسيع الBottomSheet حسب المحتوى
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            builder: (context) => AddNoteView(),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: const CustomFloatingButton(),
       body: const NotesViewBody(),
     );
   }
