@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:notes_app/cubits/add_note_cubit/add_note_cubit.dart';
+import 'package:notes_app/models/note_model.dart';
 import 'package:notes_app/widgets/custom_button.dart';
 import 'package:notes_app/widgets/custom_text_field.dart';
 
@@ -23,6 +26,17 @@ class _AddNoteFormState extends State<AddNoteForm> {
     titleController.dispose();
     contentController.dispose();
     super.dispose();
+  }
+
+  void showSuccessMessage(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Note added successfully!'),
+        backgroundColor: Colors.green,
+
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -51,18 +65,45 @@ class _AddNoteFormState extends State<AddNoteForm> {
             },
           ),
           const SizedBox(height: 24),
-          CustomButton(
-            label: 'Add Note',
-            onTap: () {
-              if (formKey.currentState!.validate()) {
-                formKey.currentState!.save();
-                // يمكنك الآن استخدام title و subTitle لإضافة الملاحظة مثلاً
-                Navigator.pop(context);
-              } else {
-                setState(() {
-                  autovalidateMode = AutovalidateMode.always;
-                });
+          BlocConsumer<AddNoteCubit, AddNoteState>(
+            listener: (context, state) {
+              if (state is AddNoteSuccess) {
+                showSuccessMessage(context);
+                Navigator.pop(context); // close bottom sheet or screen
               }
+              if (state is AddNoteFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed: ${state.errMessage}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            builder: (context, state) {
+              return CustomButton(
+                label: 'Add Note',
+                isLoading: state is AddNoteLoading,
+                onTap: () {
+                  if (formKey.currentState!.validate()) {
+                    formKey.currentState!.save();
+                    var currentDate = DateTime.now().toString();
+                    int defaultColor = Colors.orange.value;
+
+                    var noteModel = NoteModel(
+                      title: title!,
+                      subTitle: subTitle!,
+                      date: currentDate,
+                      color: defaultColor,
+                    );
+                    BlocProvider.of<AddNoteCubit>(context).addNote(noteModel);
+                  } else {
+                    setState(() {
+                      autovalidateMode = AutovalidateMode.always;
+                    });
+                  }
+                },
+              );
             },
           ),
         ],
