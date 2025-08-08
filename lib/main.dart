@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:notes_app/views/home_view.dart'; // ✅ Fixed double slashes
+import 'package:hive_flutter/adapters.dart';
+import 'package:notes_app/constants.dart';
+import 'package:notes_app/views/home_view.dart';
 
-void main() {
-  runApp(const NotesApp()); // ✅ Added `const` for optimization
+void main() async{
+  await Hive.initFlutter();
+  await Hive.openBox(kNoteBox);
+  runApp(const NotesApp());
 }
 
 class NotesApp extends StatelessWidget {
