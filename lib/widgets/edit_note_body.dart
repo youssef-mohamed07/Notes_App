@@ -1,4 +1,3 @@
-// edit_note_body.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notes_app/cubits/note_cubit.dart';
@@ -25,11 +24,30 @@ class _EditNoteBodyState extends State<EditNoteBody> {
   late TextEditingController contentController;
   bool _saving = false;
 
+  // List of selectable colors
+  final List<Color> noteColors = [
+    Colors.orange,
+    Colors.red,
+    Colors.green,
+    Colors.blue,
+    Colors.purple,
+    Colors.yellow,
+    Colors.teal,
+    Colors.brown,
+  ];
+
+  late Color selectedColor;
+
   @override
   void initState() {
     super.initState();
     titleController = TextEditingController(text: widget.note.title);
     contentController = TextEditingController(text: widget.note.subTitle);
+
+    // Initialize selectedColor safely (fallback to orange if color is 0)
+    selectedColor = widget.note.color != 0
+        ? Color(widget.note.color)
+        : Colors.orange;
   }
 
   @override
@@ -45,8 +63,9 @@ class _EditNoteBodyState extends State<EditNoteBody> {
 
     if (title.isEmpty && content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cannot save an empty note'),
-        backgroundColor: Colors.red,
+        const SnackBar(
+          content: Text('Cannot save an empty note'),
+          backgroundColor: Colors.red,
         ),
       );
       return;
@@ -54,11 +73,12 @@ class _EditNoteBodyState extends State<EditNoteBody> {
 
     setState(() => _saving = true);
     try {
-      // Use the cubit to update so UI/state refresh properly
+      // Pass selected color to updateNote
       await context.read<NoteCubit>().updateNote(
         widget.note,
         title: title,
         subTitle: content,
+        color: selectedColor.value,
         updateDate: true,
       );
 
@@ -73,8 +93,10 @@ class _EditNoteBodyState extends State<EditNoteBody> {
       Navigator.of(context).pop(true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred while saving: $e'),
-        backgroundColor: Colors.red,),
+        SnackBar(
+          content: Text('An error occurred while saving: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -99,6 +121,39 @@ class _EditNoteBodyState extends State<EditNoteBody> {
               maxLines: 6,
               controller: contentController,
             ),
+
+            const SizedBox(height: 24),
+
+            // Color picker row
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: noteColors.map((color) {
+                  bool isSelected = selectedColor == color;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedColor = color;
+                      });
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                        border: isSelected
+                            ? Border.all(color: Colors.black, width: 3)
+                            : null,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+
             const SizedBox(height: 24),
             CustomButton(
               label: _saving ? 'Saving...' : 'Save',

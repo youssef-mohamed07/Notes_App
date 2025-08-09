@@ -21,6 +21,21 @@ class _AddNoteFormState extends State<AddNoteForm> {
 
   String? title, subTitle;
 
+  // List of selectable colors
+  final List<Color> noteColors = [
+    Colors.orange,
+    Colors.red,
+    Colors.green,
+    Colors.blue,
+    Colors.purple,
+    Colors.yellow,
+    Colors.teal,
+    Colors.brown,
+  ];
+
+  // Currently selected color
+  Color selectedColor = Colors.orange;
+
   @override
   void dispose() {
     titleController.dispose();
@@ -33,7 +48,6 @@ class _AddNoteFormState extends State<AddNoteForm> {
       const SnackBar(
         content: Text('Note added successfully!'),
         backgroundColor: Colors.green,
-
         duration: Duration(seconds: 2),
       ),
     );
@@ -64,12 +78,44 @@ class _AddNoteFormState extends State<AddNoteForm> {
               subTitle = value;
             },
           ),
+          const SizedBox(height: 16),
+
+          // Color picker row wrapped in SingleChildScrollView to prevent overflow
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: noteColors.map((color) {
+                bool isSelected = selectedColor == color;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedColor = color;
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: isSelected
+                          ? Border.all(color: Colors.black, width: 3)
+                          : null,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
           const SizedBox(height: 24),
           BlocConsumer<AddNoteCubit, AddNoteState>(
             listener: (context, state) {
               if (state is AddNoteSuccess) {
                 showSuccessMessage(context);
-                Navigator.pop(context); // close bottom sheet or screen
+                Navigator.pop(context);
               }
               if (state is AddNoteFailure) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -88,14 +134,15 @@ class _AddNoteFormState extends State<AddNoteForm> {
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
                     var currentDate = DateTime.now().toString();
-                    int defaultColor = Colors.orange.value;
+                    int selectedColorValue = selectedColor.value;
 
                     var noteModel = NoteModel(
                       title: title!,
                       subTitle: subTitle!,
                       date: currentDate,
-                      color: defaultColor,
+                      color: selectedColorValue,
                     );
+
                     BlocProvider.of<AddNoteCubit>(context).addNote(noteModel);
                   } else {
                     setState(() {
